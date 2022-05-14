@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+    
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="8dp"
+            >
+        
+        <TextView
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="EPOLO08222432423"
+                android:id="@+id/order_number"
+                android:textSize="20sp"
+                />
+        
+        <ImageView
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:tint="@color/black"
+                android:id="@+id/sync_state"
+                android:src="@drawable/ic_synchornise"
+                android:layout_margin="8dp"/>
+    </LinearLayout>
+    
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="These are some very ugly jeans but just because its expensinve it looks fancey"
+            android:id="@+id/order_description"
+            android:layout_margin="8dp"
+            android:textSize="16sp"
+            />
+    
+    <LinearLayout
+            android:layout_margin="8dp"
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+        
+        <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                >
+            
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Processed: June 12"
+                    android:textAlignment="center"
+                    android:id="@+id/start_time"
+                    android:layout_margin="8dp"
+                    android:textSize="16sp"
+                    />
+        </LinearLayout>
+        
+        <LinearLayout
+                android:gravity="center"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+            
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Time Spent: 2h,3min"
+                    android:id="@+id/time_spent"
+                    android:textAlignment="center"
+                    android:layout_margin="8dp"
+                    android:textSize="16sp"
+                    />
+        
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
