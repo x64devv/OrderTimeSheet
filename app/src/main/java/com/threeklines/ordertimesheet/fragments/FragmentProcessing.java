@@ -1,6 +1,7 @@
 package com.threeklines.ordertimesheet.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
@@ -57,7 +58,6 @@ public class FragmentProcessing extends Fragment {
         for (OrderProcess op : processes){
             if (op.getEndTime() == 0){
                 incompleteProcesses.add(op);
-                Toast.makeText(getContext(), "hi", Toast.LENGTH_SHORT).show();
             }
         }
 

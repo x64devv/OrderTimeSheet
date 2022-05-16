@@ -1,5 +1,7 @@
 package com.threeklines.ordertimesheet.adapters;
 
+import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.threeklines.ordertimesheet.R;
+import com.threeklines.ordertimesheet.entities.Constants;
+import com.threeklines.ordertimesheet.entities.DB;
 import com.threeklines.ordertimesheet.entities.Order;
 import com.threeklines.ordertimesheet.entities.OrderProcess;
 
@@ -17,13 +21,18 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import static com.threeklines.ordertimesheet.entities.Constants.getLastCompleted;
+import static com.threeklines.ordertimesheet.entities.Constants.getLastOrder;
+
 public class ProcessedAdapter extends RecyclerView.Adapter<ProcessedAdapter.ViewHolder> {
     ArrayList<OrderProcess> processes;
     ArrayList<Order> orders;
+    Context context;
 
-    public ProcessedAdapter(ArrayList<OrderProcess> processes, ArrayList<Order> orders) {
+    public ProcessedAdapter(Context context, ArrayList<OrderProcess> processes, ArrayList<Order> orders) {
         this.processes = processes;
         this.orders = orders;
+        this.context = context;
     }
 
     @NonNull
@@ -37,10 +46,12 @@ public class ProcessedAdapter extends RecyclerView.Adapter<ProcessedAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         if (position < processes.size()){
             OrderProcess orderProcess = processes.get(position);
+            Order order = orderBinarySearch(orders, orderProcess.getIdentifier());
             holder.orderNumber.setText(orderProcess.getIdentifier());
-            holder.orderDescription.setText(orderBinarySearch(orders, orderProcess.getIdentifier()).getDescription());
+            if (order != null) holder.orderDescription.setText(order.getDescription());
+            else holder.orderDescription.setText(R.string.no_desc);
             holder.processedDate.setText(formatDate(orderProcess.getStartTime()));
-            holder.timeSpent.setText(formatElapsed(TimeUnit.NANOSECONDS.toMinutes(orderProcess.getElapsedTime())));
+            holder.timeSpent.setText(formatElapsed(calculateElapsedTime(orderProcess.getStartTime(), totalBreaksTime(orderProcess.getBreaks()), orderProcess.getIdentifier())));
             if (orderProcess.getSyncState().equals("false")){
                 holder.syncState.setImageResource(R.drawable.ic_sync_done);
             }
@@ -50,6 +61,23 @@ public class ProcessedAdapter extends RecyclerView.Adapter<ProcessedAdapter.View
 
     @Override
     public int getItemCount() {
+        String lastEntry = getLastCompleted(context);
+        if (!lastEntry.equals("zero")) {
+            boolean flag = true;
+            for (OrderProcess op : processes) {
+                if (op.getIdentifier().equals(lastEntry)) {
+                    flag = false;
+                }
+            }
+            if (flag) {
+                ArrayList<OrderProcess> temp = DB.getInstance(context).getAllProcess();
+                for (OrderProcess o: temp ){
+                    if(o.getIdentifier().equals(lastEntry) && o.getEndTime() != 0){
+                        processes.add(o);
+                    }
+                }
+            }
+        }
         return processes.size();
     }
 
@@ -77,15 +105,51 @@ public class ProcessedAdapter extends RecyclerView.Adapter<ProcessedAdapter.View
         }
         return null;
     }
-
-    private String formatDate(long nanoTime){
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM, dd", Locale.ENGLISH);
-        return simpleDateFormat.format(new Date(nanoTime));
+    private long totalBreaksTime(String breaks) {
+        long totalTime = 0;
+        if (breaks != null && !breaks.equals("")) {
+            Log.d("ProcessingAdapter", "totalBreaksTime: breaks: " + breaks);
+            String[] fullBreaks = breaks.split("#");
+            for (String fullBreak : fullBreaks) {
+                String[] breakInfo = fullBreak.split("-");
+                if (breakInfo[0].equals("")) continue;
+                long bStart = Long.parseLong(breakInfo[0]);
+                long bEnd = Long.parseLong(breakInfo[1]);
+                long breakDuration = bEnd - bStart;
+                totalTime += breakDuration;
+            }
+        }
+        return totalTime;
     }
 
-    private String formatElapsed(long minutes){
-        if(minutes < 60) return "0 hrs, " + minutes + " mins";
-        return minutes/60 + " hrs, " + minutes%60 + " mins";
+    private long calculateElapsedTime(long startTime, long breaksDuration, String identifier) {
+        long currentTime = System.currentTimeMillis();
+        boolean isPaused = Constants.getCurrentOrderState(context, identifier);
+        long grossTime = currentTime - startTime;
+        long netTime = grossTime - breaksDuration;
+        if (isPaused) {
+            long breakStart = Constants.getBreakStart(context, identifier);
+            long currentBreak = currentTime - breakStart;
+            netTime -= currentBreak;
+            return TimeUnit.MILLISECONDS.toMinutes(netTime);
+        }
+
+        return TimeUnit.MILLISECONDS.toMinutes(netTime);
+    }
+
+    private String formatDate(long startTime) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd, MMM, hh:mm", Locale.ENGLISH);
+        return "Started\n" + simpleDateFormat.format(new Date(startTime));
+
+    }
+
+
+    private String formatElapsed(long minutes) {
+        if (minutes < 60) {
+            return "Elapsed Time\nh:0, m:" + minutes;
+        } else {
+            return "Elapsed Time\nh:" + (minutes / 60) + ", m:" + (minutes % 60);
+        }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -97,6 +161,7 @@ public class ProcessedAdapter extends RecyclerView.Adapter<ProcessedAdapter.View
             orderDescription = itemView.findViewById(R.id.order_description);
             processedDate = itemView.findViewById(R.id.start_time);
             timeSpent = itemView.findViewById(R.id.time_spent);
+            syncState = itemView.findViewById(R.id.sync_state);
         }
     }
 }

@@ -76,7 +76,7 @@ public class FragmentProcessed extends Fragment {
         });
         processedRecycler = layout.findViewById(R.id.list_processed);
         processedRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
-        ProcessedAdapter adapter = new ProcessedAdapter(completeProcesses, orders);
+        ProcessedAdapter adapter = new ProcessedAdapter(getContext(), completeProcesses, orders);
         processedRecycler.setAdapter(adapter);
         return layout;
     }

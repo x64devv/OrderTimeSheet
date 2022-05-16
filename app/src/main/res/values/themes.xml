@@ -3,9 +3,11 @@
     <style name="Theme.OrderTimeSheet" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/blue_1</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorPrimaryVariant">@color/green</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
+        <item name="colorAccent">@color/colorAccent</item>
         <item name="colorSecondary">@color/pink_1</item>
         <item name="colorSecondaryVariant">@color/pink_2</item>
         <item name="colorOnSecondary">@color/black</item>
